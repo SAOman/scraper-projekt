@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Scraper cytatów</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 20px; }
+        h1 { color: #333; }
+        form { margin: 20px 0; display: flex; gap: 10px; align-items: center; }
+        input[type=number] { padding: 8px; width: 80px; border: 1px solid #ccc; border-radius: 4px; }
+        button { padding: 8px 20px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .komunikat { background: #d4edda; color: #155724; padding: 10px; border-radius: 4px; margin: 10px 0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { background: #333; color: white; padding: 10px; text-align: left; }
+        td { padding: 10px; border-bottom: 1px solid #eee; vertical-align: top; }
+        tr:hover { background: #f9f9f9; }
+        .tagi { font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <h1>Scraper cytatów</h1>
+
+    <form action="/scrape" method="post">
+        <label>Liczba stron:</label>
+        <input type="number" name="ile_stron" value="10" min="1" max="10">
+        <button type="submit">Uruchom scraper</button>
+    </form>
+
+    {% if komunikat %}
+    <div class="komunikat">{{ komunikat }}</div>
+    {% endif %}
+
+    <p>Cytaty w bazie: <strong>{{ cytaty|length }}</strong></p>
+
+    <table>
+        <tr>
+            <th>Treść</th>
+            <th>Autor</th>
+            <th>Tagi</th>
+            <th>Link</th>
+        </tr>
+        {% for c in cytaty %}
+        <tr>
+            <td>{{ c.tekst }}</td>
+            <td>{{ c.autor }}</td>
+            <td class="tagi">{{ c.tagi | join(", ") }}</td>
+            <td><a href="{{ c.link_autora }}" target="_blank">profil</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
