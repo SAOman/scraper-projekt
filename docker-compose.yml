@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+
+  mongo:
+    image: mongo
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  scraper:
+    build:
+      context: .
+      dockerfile: scraper/Dockerfile
+    container_name: scraper
+    depends_on:
+      - mongo
+
+  gui:
+    build:
+      context: .
+      dockerfile: gui/Dockerfile
+    container_name: gui
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongo
+      - scraper
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/
+
+volumes:
+  mongo_data:
