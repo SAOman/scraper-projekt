@@ -1,7 +1,9 @@
 from pymongo import MongoClient
 
 def polacz():
-    client = MongoClient("mongodb://localhost:27017/")
+    import os
+    MONGO_URI = os.environ.get("MONGO_URI", "mongodb://localhost:27017/")
+    client = MongoClient(MONGO_URI)
     db = client["scraper_db"]
     return db
 
