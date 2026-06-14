@@ -2,51 +2,98 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Scraper cytatów</title>
+    <title>Web Scraper</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 20px; }
-        h1 { color: #333; }
-        form { margin: 20px 0; display: flex; gap: 10px; align-items: center; }
-        input[type=number] { padding: 8px; width: 80px; border: 1px solid #ccc; border-radius: 4px; }
-        button { padding: 8px 20px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        .komunikat { background: #d4edda; color: #155724; padding: 10px; border-radius: 4px; margin: 10px 0; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { background: #333; color: white; padding: 10px; text-align: left; }
-        td { padding: 10px; border-bottom: 1px solid #eee; vertical-align: top; }
-        tr:hover { background: #f9f9f9; }
-        .tagi { font-size: 12px; color: #666; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, sans-serif; background: #1a1a2e; color: #eee; min-height: 100vh; padding: 30px 20px; }
+        h1 { text-align: center; font-size: 2rem; margin-bottom: 24px; color: #00d4ff; }
+        h1 span { font-size: 1.5rem; margin-right: 8px; }
+
+        .card { background: #16213e; border-radius: 10px; padding: 24px; max-width: 700px; margin: 0 auto 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
+
+        textarea { width: 100%; background: #0f3460; border: 1px solid #00d4ff44; border-radius: 6px; color: #eee; font-size: 14px; padding: 12px; resize: vertical; min-height: 100px; font-family: monospace; }
+        textarea::placeholder { color: #888; }
+
+        button { margin-top: 14px; width: 100%; padding: 12px; background: #00d4ff; color: #1a1a2e; font-size: 16px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; transition: background 0.2s; }
+        button:hover { background: #00b8d9; }
+
+        .komunikat { background: #0d4f3c; color: #4ecca3; border-radius: 6px; padding: 12px 16px; max-width: 700px; margin: 0 auto 20px; text-align: center; }
+
+        .stats { text-align: center; color: #aaa; margin-bottom: 20px; }
+        .stats strong { color: #00d4ff; }
+
+        .wyniki { max-width: 1100px; margin: 0 auto; display: grid; gap: 16px; }
+
+        .wynik-card { background: #16213e; border-radius: 10px; padding: 20px; border-left: 4px solid #00d4ff; }
+        .wynik-card h2 { font-size: 1rem; color: #00d4ff; margin-bottom: 4px; word-break: break-all; }
+        .wynik-card .url { font-size: 12px; color: #888; margin-bottom: 14px; word-break: break-all; }
+
+        .grupy { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+        .grupa { background: #0f3460; border-radius: 6px; padding: 12px; }
+        .grupa h3 { font-size: 11px; text-transform: uppercase; color: #00d4ff88; margin-bottom: 6px; letter-spacing: 1px; }
+        .grupa p { font-size: 13px; color: #ccc; }
+        .grupa .liczba { font-size: 22px; font-weight: bold; color: #4ecca3; }
+        .lista { font-size: 12px; color: #aaa; line-height: 1.6; word-break: break-all; }
+        .desc { font-size: 13px; color: #bbb; font-style: italic; margin-top: 10px; }
     </style>
 </head>
 <body>
-    <h1>Scraper cytatów</h1>
+    <h1><span>🌐</span> Web Scraper</h1>
 
-    <form action="/scrape" method="post">
-        <label>Liczba stron:</label>
-        <input type="number" name="ile_stron" value="10" min="1" max="10">
-        <button type="submit">Uruchom scraper</button>
-    </form>
+    <div class="card">
+        <form action="/scrape" method="post">
+            <textarea name="urls" placeholder="Wklej adresy URL (każdy w nowej linii):&#10;https://www.wp.pl&#10;https://www.python.org&#10;https://www.mongodb.com/contact"></textarea>
+            <button type="submit">🔍 Start Scrapowania</button>
+        </form>
+    </div>
 
     {% if komunikat %}
     <div class="komunikat">{{ komunikat }}</div>
     {% endif %}
 
-    <p>Cytaty w bazie: <strong>{{ cytaty|length }}</strong></p>
+    <p class="stats">Zescrapowane strony w bazie: <strong>{{ wyniki|length }}</strong></p>
 
-    <table>
-        <tr>
-            <th>Treść</th>
-            <th>Autor</th>
-            <th>Tagi</th>
-            <th>Link</th>
-        </tr>
-        {% for c in cytaty %}
-        <tr>
-            <td>{{ c.tekst }}</td>
-            <td>{{ c.autor }}</td>
-            <td class="tagi">{{ c.tagi | join(", ") }}</td>
-            <td><a href="{{ c.link_autora }}" target="_blank">profil</a></td>
-        </tr>
+    <div class="wyniki">
+        {% for w in wyniki %}
+        <div class="wynik-card">
+            <h2>{{ w.title or "Brak tytułu" }}</h2>
+            <div class="url">{{ w.url }}</div>
+
+            <div class="grupy">
+                <div class="grupa">
+                    <h3>📧 E-maile</h3>
+                    {% if w.emails %}
+                        <div class="lista">{{ w.emails[:3] | join("<br>") | safe }}</div>
+                        {% if w.emails|length > 3 %}<p style="color:#888;font-size:11px">+{{ w.emails|length - 3 }} więcej</p>{% endif %}
+                    {% else %}
+                        <p>brak</p>
+                    {% endif %}
+                </div>
+                <div class="grupa">
+                    <h3>📞 Telefony</h3>
+                    <span class="liczba">{{ w.phones|length }}</span>
+                    <p>wykrytych numerów</p>
+                </div>
+                <div class="grupa">
+                    <h3>🔗 Linki</h3>
+                    <span class="liczba">{{ w.links|length }}</span>
+                    <p>unikalnych linków</p>
+                </div>
+                <div class="grupa">
+                    <h3>📰 Nagłówki H1/H2</h3>
+                    {% if w.headers %}
+                        <div class="lista">{{ w.headers[:2] | join(", ") }}</div>
+                    {% else %}
+                        <p>brak</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if w.description %}
+            <div class="desc">"{{ w.description[:200] }}{% if w.description|length > 200 %}…{% endif %}"</div>
+            {% endif %}
+        </div>
         {% endfor %}
-    </table>
+    </div>
 </body>
 </html>
